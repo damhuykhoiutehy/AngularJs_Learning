@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="studentManagementApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="angular.min.js"></script>
+</head>
+<body>
+    <div class="container" ng-controller="StudentController">
+        <h2 class="mt-4">Quản lý sinh viên</h2>
+        
+        <div class="form-row">
+            <div class="col-md-3 mb-3">
+                <label for="studentId">Mã sinh viên:</label>
+                <input type="text" id="studentId" class="form-control" ng-model="newStudent.studentId">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label for="fullName">Họ và tên:</label>
+                <input type="text" id="fullName" class="form-control" ng-model="newStudent.fullName">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label for="totalMarks">Điểm tổng kết:</label>
+                <input type="text" id="totalMarks" class="form-control" ng-model="newStudent.totalMarks">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label>&nbsp;</label>
+                <button class="btn btn-primary btn-block" ng-click="addOrUpdateStudent()">Add / Update</button>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3 mb-3">
+                <label for="searchInput">Tìm kiếm:</label>
+                <input type="text" id="searchInput" class="form-control" ng-model="searchQuery" placeholder="Nhập từ khóa...">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label for="sortBy">Xếp loại:</label>
+                <select id="sortBy" class="form-control" ng-model="selectedSort">
+                    <option value="">Tất cả</option>
+                    <option value="Giỏi">Giỏi</option>
+                    <option value="Khá">Khá</option>
+                    <option value="Trung bình">Trung bình</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã sinh viên</th>
+                    <th>Họ và tên</th>
+                    <th>Điểm tổng kết</th>
+                    <th>Xếp loại</th>
+                    <th>Sửa</th>
+                    <th>Xóa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="student in students | filter:selectedSort | filter:searchQuery">
+                    <td>{{$index + 1}}</td>
+                    <td>{{student.studentId}}</td>
+                    <td>{{student.fullName}}</td>
+                    <td>{{student.totalMarks}}</td>
+                    <td>{{student.grade}}</td>
+                    <td><button class="btn btn-sm btn-warning" ng-click="editStudent(student, $index)">Sửa</button></td>
+                    <td><button class="btn btn-sm btn-danger" ng-click="deleteStudent(student)">Xóa</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script> -->
+    <script>
+        var app = angular.module('studentManagementApp', []);
+        var isEdit = false;  // Biến kiểm tra đang ở ché độ sửa hay thêm mới
+        var editIndex = -1;  // Index của sinh viên đang được sửa
+
+        app.controller('StudentController', function($scope) {
+            $scope.students = [
+                {studentId: "SV001", fullName: "Nguyễn Văn A", totalMarks: 8.5, grade: calculateGrade(8.5)},
+                {studentId: "SV002", fullName: "Nguyễn Văn B", totalMarks: 7.2, grade: calculateGrade(7.2)},
+                {studentId: "SV003", fullName: "Nguyễn Văn C", totalMarks: 6.8, grade: calculateGrade(6.8)},
+                {studentId: "SV004", fullName: "Nguyễn Văn D", totalMarks: 5.5, grade: calculateGrade(5.5)},
+                {studentId: "SV005", fullName: "Nguyễn Văn E", totalMarks: 9.0, grade: calculateGrade(9.0)},
+
+            ];
+            $scope.selectedSort = '';
+            // scope.isEdit = false;  // Biến kiểm tra đang ở ché độ sửa hay thêm mới
+            // scope.editIndex = -1;  // Index của sinh viên đang được sửa
+
+            $scope.addOrUpdateStudent = function(){
+                if (isEdit) {
+                    //cập nhật lại thông tin sinh viên
+                    $scope.students[editIndex].studentId = $scope.newStudent.studentId;
+                    $scope.students[editIndex].fullName = $scope.newStudent.fullName;
+                    $scope.students[editIndex].totalMarks = $scope.newStudent.totalMarks;
+                    $scope.students[editIndex].grade = calculateGrade($scope.newStudent.totalMarks);
+
+                    // reset input fields và chuyển đổi lại nút "thêm"
+                    isEdit = false;
+                    editIndex = -1;
+                    
+                    $scope.newStudent = {};
+                }  else  {
+                    // Thêm mới sinh viên
+                    $scope.students.push({
+                        studentId: $scope.newStudent.studentId,
+                        fullName: $scope.newStudent.fullName,
+                        totalMarks: $scope.newStudent.totalMarks,
+                        grade: calculateGrade($scope.newStudent.totalMarks)
+                    });
+
+                    // reset input fields
+                    $scope.newStudent = {};
+                }
+            };
+
+            $scope.editStudent = function(student, index) {
+                // Lưu thông tin sinh viên được chọn vào các trường nhập liệu
+                $scope.newStudent = {
+                    studentId: student.studentId,
+                    fullName: student.fullName,
+                    totalMarks: student.totalMarks
+                };
+
+                // Đánh dấu là đang ở chế độ sửa và lưu Index của sinh viện được sửa
+                isEdit = true;
+                editIndex = index;
+                // console.log("Edit student:", student);
+            };
+
+            $scope.deleteStudent = function(student) {
+                var index = $scope.students.indexOf(student);
+                $scope.students.splice(index, 1);
+            };
+
+            function calculateGrade(totalMarks) {
+                if (totalMarks >= 8) {
+                    return "Giỏi";
+                } else if (totalMarks >= 6.5) {
+                    return "Khá";
+                } else {
+                    return "Trung bình";
+                }
+            }
+        });
+    </script>
+</body>
+</html>

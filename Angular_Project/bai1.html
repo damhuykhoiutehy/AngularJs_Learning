@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="text/javascript" src="angular.min.js"></script>
+</head>
+<body ng-controller = "myController">
+    <!-- <div ng-show="!hide">  -->
+    <div ng-if="!hide"> 
+        <!-- Hello world! -->
+        <!-- Tinh toan: 5 + 5 = {{5+5}} -->
+        <br></br>
+        Mã khách hàng <input type=""text" name="" ng-model=""ma_kh" />
+        <h3>Mã khách hàng là: {{ma_kh}}</h3>
+    </div>
+
+    <button ng-click = "hide = true">Ẩn</button>
+    <button ng-click = "hide = false">Hiện</button>
+</body>
+</html>
+
+<script type="text/javascript"> 
+    var app= angular.module("myApp",[]);
+    app.controller("myController", function($scope){
+        $scope.ma_kh = "KH001";
+        $scope.hide = true;
+    });
+</script>
